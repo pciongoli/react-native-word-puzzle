@@ -5,6 +5,8 @@ import {
    Text,
    FlatList,
    TouchableOpacity,
+   Dimensions,
+   PixelRatio,
 } from "react-native";
 
 // Define the words to search for
@@ -21,6 +23,11 @@ const letters = [
    ["O", "W", "R", "D", "A", "T", "A", "R"],
    ["L", "O", "M", "L", "S", "I", "D", "E"],
 ];
+
+const letterSize = Math.floor(
+   Dimensions.get("window").width / 4 / PixelRatio.get()
+);
+const marginSize = Math.floor(3 / PixelRatio.get());
 
 export default function App() {
    const [selectedLetters, setSelectedLetters] = useState([]);
@@ -79,16 +86,25 @@ export default function App() {
       );
    };
 
+   // Get the device's pixel density
+   const pixelDensity = PixelRatio.get();
+
+   // Calculate the size of the letters and the margin based on the screen size
+   const { width } = Dimensions.get("window");
+   const letterSize = Math.floor(width / 8.5 / pixelDensity);
+   const marginSize = Math.floor(4 / pixelDensity);
+
    // Return components
    return (
       <View style={styles.container}>
-         <Text>Word Puzzle</Text>
+         <Text style={styles.title}>Word Puzzle</Text>
          <FlatList
             data={letters.flat()}
             numColumns={8}
             renderItem={renderLetter}
             keyExtractor={keyExtractor}
-            style={styles.grid}
+            contentContainerStyle={styles.gridContainer}
+            columnWrapperStyle={styles.gridRow}
          />
          <View style={styles.foundWords}>
             <Text style={styles.foundWordsHeader}>Words Found:</Text>
@@ -114,16 +130,25 @@ const styles = StyleSheet.create({
       flex: 1,
       backgroundColor: "#fff",
       alignItems: "center",
-      justifyContent: "flex-start",
-      paddingTop: 20,
+      paddingTop: 70,
+      paddingBottom: 200, // adjust this value to move the puzzle closer to the bottom
    },
-   grid: {
-      marginVertical: 75,
+   title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      marginBottom: 20,
+   },
+   gridContainer: {
+      marginVertical: 50, // adjust this value to make the puzzle larger
+      marginHorizontal: 20,
+   },
+   gridRow: {
+      justifyContent: "space-between",
    },
    letter: {
-      width: 40,
-      height: 40,
-      margin: 2,
+      width: letterSize,
+      height: letterSize,
+      margin: marginSize,
       backgroundColor: "#ccc",
       alignItems: "center",
       justifyContent: "center",
@@ -132,10 +157,10 @@ const styles = StyleSheet.create({
       backgroundColor: "#f00",
    },
    letterText: {
-      fontSize: 20,
+      fontSize: letterSize / 2,
    },
    foundWords: {
-      marginTop: 0,
+      marginTop: 20,
    },
    foundWordsHeader: {
       fontSize: 18,
@@ -143,7 +168,7 @@ const styles = StyleSheet.create({
    },
    foundWord: {
       fontSize: 12,
-      marginVertical: 14,
+      marginVertical: 5,
    },
    foundWordFound: {
       textDecorationLine: "line-through",
