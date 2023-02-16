@@ -8,9 +8,10 @@ import {
    Dimensions,
    PixelRatio,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 // Define the words to search for
-const words = ["OREO", "GATO", "BEBE", "STINK", "STANK", "BUNGHOLE", "LOMLS"];
+const words = ["OREO", "GATO", "BEBE", "STINK", "BUNGHOLE", "LOMLS"];
 
 // Define the grid of letters
 const letters = [
@@ -25,60 +26,59 @@ const letters = [
 ];
 
 const letterSize = Math.floor(
-   Dimensions.get("window").width / 4 / PixelRatio.get()
+   Dimensions.get("window").width / 3.5 / PixelRatio.get()
 );
-const marginSize = Math.floor(3 / PixelRatio.get());
+const marginSize = Math.floor(4 / PixelRatio.get());
 
 export default function App() {
-   const [selectedLetters, setSelectedLetters] = useState([]);
+   const [selectedIndexes, setSelectedIndexes] = useState([]);
 
    // Check if the selected letters form a valid word
    useEffect(() => {
-      const selectedWord = selectedLetters.join("");
-      if (words.includes(selectedWord)) {
-         alert(`You found the word "${selectedWord}"!`);
-      }
-   }, [selectedLetters]);
-
-   //  generates unique key based on the letter's positoin
-   const keyExtractor = (item, index) => {
-      const row = Math.floor(index / 8);
-      const col = index % 8;
-      return `${item}-${row}-${col}`;
-   };
-
-   const [foundWords, setFoundWords] = useState([]);
-
-   useEffect(() => {
+      const selectedLetters = selectedIndexes.map(
+         (index) => letters.flat()[index]
+      );
       const selectedWord = selectedLetters.join("");
       if (words.includes(selectedWord) && !foundWords.includes(selectedWord)) {
          alert(`You found the word "${selectedWord}"!`);
          setFoundWords([...foundWords, selectedWord]);
-         setSelectedLetters([]);
+         setSelectedIndexes([]);
       }
-   }, [selectedLetters]);
+   }, [selectedIndexes]);
+
+   //  generates unique key based on the letter's position
+   const keyExtractor = (item, index) => index.toString();
+
+   const [foundWords, setFoundWords] = useState([]);
 
    // Handle touch events on letters
-   const handleLetterPress = (letter) => {
-      if (selectedLetters.includes(letter)) {
-         // If the letter is already selected, remove it from the array
-         setSelectedLetters(selectedLetters.filter((l) => l !== letter));
+   const handleLetterPress = (index) => {
+      if (selectedIndexes.length === 0) {
+         // If no letter has been selected, add the selected letter's index to the array
+         setSelectedIndexes([index]);
       } else {
-         // If the letter is not selected, add it to the end of the array
-         setSelectedLetters([...selectedLetters, letter]);
+         const lastIndex = selectedIndexes[selectedIndexes.length - 1];
+         const row1 = Math.floor(index / 8);
+         const col1 = index % 8;
+         const row2 = Math.floor(lastIndex / 8);
+         const col2 = lastIndex % 8;
+         const isAdjacent =
+            Math.abs(row1 - row2) <= 1 && Math.abs(col1 - col2) <= 1;
+         if (isAdjacent) {
+            // If the selected letter is adjacent to the previously selected letter, add its index to the array
+            setSelectedIndexes([...selectedIndexes, index]);
+         }
       }
    };
 
    // Render a single letter in the grid
    const renderLetter = ({ item, index }) => {
-      const key = `${item}-${index}`;
+      const key = keyExtractor(item, index);
+      const isSelected = selectedIndexes.includes(index);
       return (
          <TouchableOpacity
-            style={[
-               styles.letter,
-               selectedLetters.includes(item) && styles.selectedLetter,
-            ]}
-            onPress={() => handleLetterPress(item)}
+            style={[styles.letter, isSelected && styles.selectedLetter]}
+            onPress={() => handleLetterPress(index)}
             key={key}
          >
             <Text style={styles.letterText}>{item}</Text>
@@ -91,12 +91,15 @@ export default function App() {
 
    // Calculate the size of the letters and the margin based on the screen size
    const { width } = Dimensions.get("window");
-   const letterSize = Math.floor(width / 8.5 / pixelDensity);
-   const marginSize = Math.floor(4 / pixelDensity);
+   const letterSize = Math.floor(width / 2 / pixelDensity);
+   const marginSize = Math.floor(2 / pixelDensity);
 
    // Return components
    return (
-      <View style={styles.container}>
+      <LinearGradient
+         colors={["#4c669f", "#3b5998", "#192f6a"]}
+         style={styles.container}
+      >
          <Text style={styles.title}>Word Puzzle</Text>
          <FlatList
             data={letters.flat()}
@@ -120,7 +123,7 @@ export default function App() {
                </Text>
             ))}
          </View>
-      </View>
+      </LinearGradient>
    );
 }
 
@@ -128,19 +131,19 @@ export default function App() {
 const styles = StyleSheet.create({
    container: {
       flex: 1,
-      backgroundColor: "#fff",
       alignItems: "center",
       paddingTop: 70,
-      paddingBottom: 200, // adjust this value to move the puzzle closer to the bottom
+      paddingBottom: 50, // adjust this value to move the puzzle closer to the bottom
    },
    title: {
       fontSize: 24,
       fontWeight: "bold",
       marginBottom: 20,
+      color: "white",
    },
    gridContainer: {
-      marginVertical: 50, // adjust this value to make the puzzle larger
-      marginHorizontal: 20,
+      marginVertical: 100, // adjust this value to make the puzzle larger
+      marginHorizontal: 50,
    },
    gridRow: {
       justifyContent: "space-between",
@@ -154,23 +157,26 @@ const styles = StyleSheet.create({
       justifyContent: "center",
    },
    selectedLetter: {
-      backgroundColor: "#f00",
+      backgroundColor: "#eb4034",
    },
    letterText: {
       fontSize: letterSize / 2,
    },
    foundWords: {
-      marginTop: 20,
+      marginTop: 10,
    },
    foundWordsHeader: {
       fontSize: 18,
       fontWeight: "bold",
+      color: "white",
    },
    foundWord: {
       fontSize: 12,
       marginVertical: 5,
+      color: "white",
    },
    foundWordFound: {
       textDecorationLine: "line-through",
+      color: "white",
    },
 });
