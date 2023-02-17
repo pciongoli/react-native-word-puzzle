@@ -32,6 +32,7 @@ const marginSize = Math.floor(4 / PixelRatio.get());
 
 export default function App() {
    const [selectedIndexes, setSelectedIndexes] = useState([]);
+   const [time, setTime] = useState(0);
 
    // Check if the selected letters form a valid word
    useEffect(() => {
@@ -45,6 +46,14 @@ export default function App() {
          setSelectedIndexes([]);
       }
    }, [selectedIndexes]);
+
+   // Update the timer every second
+   useEffect(() => {
+      const interval = setInterval(() => {
+         setTime((time) => time + 1);
+      }, 1000);
+      return () => clearInterval(interval);
+   }, []);
 
    //  generates unique key based on the letter's position
    const keyExtractor = (item, index) => index.toString();
@@ -101,6 +110,9 @@ export default function App() {
          style={styles.container}
       >
          <Text style={styles.title}>Word Puzzle</Text>
+         <View style={styles.timer}>
+            <Text style={styles.timerText}>Time: {time}s</Text>
+         </View>
          <FlatList
             data={letters.flat()}
             numColumns={8}
@@ -133,7 +145,7 @@ const styles = StyleSheet.create({
       flex: 1,
       alignItems: "center",
       paddingTop: 70,
-      paddingBottom: 50, // adjust this value to move the puzzle closer to the bottom
+      paddingBottom: 50,
    },
    title: {
       fontSize: 24,
@@ -141,8 +153,17 @@ const styles = StyleSheet.create({
       marginBottom: 20,
       color: "white",
    },
+   timer: {
+      alignSelf: "flex-start",
+      marginLeft: 20,
+      marginBottom: 10,
+   },
+   timerText: {
+      fontSize: 16,
+      color: "white",
+   },
    gridContainer: {
-      marginVertical: 100, // adjust this value to make the puzzle larger
+      marginVertical: 100,
       marginHorizontal: 50,
    },
    gridRow: {
